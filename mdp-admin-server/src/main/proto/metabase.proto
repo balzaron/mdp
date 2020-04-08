@@ -1,0 +1,183 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+option java_multiple_files = true;
+option java_package = "com.miotech.mdp.common.models.protobuf.metabase";
+package com.miotech.mdp.common.models.protobuf.metabase;
+
+message SchemaList {
+    repeated string schemas = 1;
+}
+
+message MetabaseDatabase {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    string engine = 4;
+//    map<string, string> details = 5;
+    repeated string features = 6;
+    string dbName = 7;
+    string dbHost = 8;
+}
+
+message MetabaseDatabaseList {
+    repeated MetabaseDatabase databases = 1;
+}
+
+message MetabaseField {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    int32 table_id = 4;
+    string base_type = 5;
+    string database_type = 6;
+    string special_type = 7;
+    bool active = 8;
+}
+
+message MetabaseTable {
+    int32 id = 1;
+    string name = 2;
+    string schema = 3;
+    string description = 4;
+    MetabaseDatabase db = 5;
+    string entity_type = 6;
+    bool active = 7;
+    int32 db_id = 8;
+    string visibility_type = 9;
+    repeated MetabaseField fields = 10;
+}
+
+message MetabaseDatabaseMeta {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    string engine = 4;
+    //    map<string, string> details = 5;
+    repeated string features = 6;
+    repeated MetabaseTable tables = 7;
+}
+
+message TemplateTag {
+    string id = 1;
+    string name = 2;
+    string display_name = 3;
+    string type = 4;
+    bool required = 5;
+}
+
+message NativeQuery {
+    string query = 1;
+    map<string, TemplateTag> template_tags = 2;
+    string collection = 3;
+}
+
+
+message DatasetQuery {
+    int32 database = 1;
+    string type = 2;
+    NativeQuery native = 3;
+}
+
+message ColumnFormatting {
+    repeated string columns = 1;
+    string type = 2;
+    string operator = 3;
+    string value = 4;
+    string color = 5;
+    bool highlight_row = 6;
+}
+
+enum DisplayType {
+    OTHER_DISPLAY_TYPE = 0;
+    table = 1;
+
+}
+
+message VisualizationSettings {
+   repeated ColumnFormatting table_column_formatting = 1;
+   string table_pivot_column = 2;
+   string table_cell_column = 3;
+}
+
+message MetabaseCard {
+    string name = 1;
+    string description = 2;
+    DisplayType display = 3;
+    int32 collection_id = 4;
+    DatasetQuery dataset_query = 5;
+    VisualizationSettings visualization_settings = 6;
+    bool enable_embedding = 7;
+    bool archived = 8;
+//    repeated google.protobuf.Any result_metadata = 9;
+    int32 id = 10;
+    int32 database_id = 11;
+}
+
+message MetabaseCardRequest {
+    string name = 1;
+    string description = 2;
+    DisplayType display = 3;
+    int32 collection_id = 4;
+    DatasetQuery dataset_query = 5;
+    VisualizationSettings visualization_settings = 6;
+    bool enable_embedding = 7;
+    bool archived = 8;
+}
+
+message RowValue {
+    oneof row_value {
+        string string_value = 2;
+        // using string to preserve precision
+        string number_value = 3;
+        bool boolean_value = 4;
+        bool null = 5;
+    }
+}
+
+message Row {
+    repeated RowValue values = 1;
+}
+
+message Col {
+    string name = 1;
+    string display_name = 2;
+    string base_type = 3;
+    string source = 4;
+}
+
+message QueryData {
+    repeated string columns = 1;
+    repeated Row rows = 2;
+    repeated Col cols = 3;
+}
+
+message QueryResult {
+    int32 database_id = 1;
+    DatasetQuery json_query = 2;
+    int32 row_count = 3;
+    string status = 4;
+    QueryData data = 5;
+    int32 rows_truncated = 6;
+}
+
+message QueryParameter {
+    string type = 1;
+    google.protobuf.Any target = 2;
+    string value = 3;
+}
+
+message QueryRequest {
+    bool ignore_cache = 1;
+    repeated QueryParameter parameters = 2;
+}
+
+message AuthRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message AuthResponse {
+    string id = 1;
+}

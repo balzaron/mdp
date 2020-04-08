@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+option java_multiple_files = true;
+option java_package = "com.miotech.mdp.common.models.protobuf.livy";
+package com.miotech.mdp.common.models.protobuf.livy;
+
+message App {
+     string id = 1;
+     string user = 2;
+     string name = 3;
+     string queue = 4;
+     string state = 5;
+     string finalStatus = 6;
+     int32 progress = 7;
+     string trackingUI = 8;
+     string trackingUrl = 9;
+     string diagnostics = 10;
+     int64 clusterId = 11;
+     string applicationType = 12;
+     string applicationTags = 13;
+     int64 priority = 14;
+     int64 startedTime = 15;
+     int64 finishedTime = 16;
+     int64 elapsedTime = 17;
+}
+
+message Application {
+
+    App app = 1;
+}
+
+message Applications {
+     message Apps {
+          repeated App app = 1;
+     };
+
+     Apps apps = 1;
+}

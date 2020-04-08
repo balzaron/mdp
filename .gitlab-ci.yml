@@ -1,0 +1,97 @@
+stages:
+  - collect-metrics
+  - verify
+  - build
+  - build-image
+  - set-tag
+  - sonar_preview
+  - sonar_analyze
+  - deploy
+
+cache:
+  paths:
+    - .m2/
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+
+collect-metrics:
+  image: mioyingtech/python-gitlab:0.1-build
+  stage: collect-metrics
+  script:
+    - python /tmp/metrics.py $CI_PROJECT_NAME $CI_PROJECT_ID $CI_PIPELINE_ID $CI_COMMIT_REF_NAME
+  allow_failure: true
+
+verify:
+  stage: verify
+  image: maven:3.6.1-jdk-8
+  except:
+    - master
+    - release
+    - production
+    - tags
+  script:
+    - mvn clean package
+    - mvn sonar:sonar -Dsonar.projectKey=com.miotech:search-server -Dsonar.projectName='mdp backend' -Dsonar.sources=src/main -Dsonar.sourceEncoding=UTF-8 -Dsonar.java.binaries=/target -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_TOKEN -Dsonar.analysis.mode=preview -Dsonar.issuesReport.html.enable=true -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
+
+sonar_publish:
+  stage: build
+  image: maven:3.6.1-jdk-8
+  only:
+    - master
+  script:
+    - mvn clean install -DskipTests sonar:sonar -Dsonar.projectKey=com.miotech:search-server -Dsonar.projectName='mdp backend' -Dsonar.sources=src/main -Dsonar.sourceEncoding=UTF-8 -Dsonar.java.binaries=/target -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_TOKEN -Dsonar.analysis.mode=publish -Dsonar.issuesReport.html.enable=true -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
+
+build:
+  stage: build
+  image: maven:3.6.1-jdk-8
+  only:
+    - master
+    - release
+    - tags
+  script:
+    - mvn clean install -DskipTests
+    - mkdir -p /builds/artifacts/mdp-backend/${CI_COMMIT_REF_NAME}/
+    - cp mdp-admin-server/target/mdp-admin-server-1.0.0.jar /builds/artifacts/mdp-backend/${CI_COMMIT_REF_NAME}/
+  # artifacts:
+  #   name: "${CI_COMMIT_REF_NAME}"
+  #   paths:
+  #     - mdp-admin-server/target/mdp-admin-server-1.0.0.jar
+  #   expire_in: 2 day
+
+build-image:
+  stage: build-image
+  image: mioyingtech/docker:latest
+  services:
+    - docker:dind
+  only:
+    - master
+    - release
+    - tags
+  tags:
+    - docker-push
+  # dependencies:
+  #   - build
+  script:
+    - mkdir -p mdp-admin-server/target/
+    - rsync -vzrtopg --progress -e ssh root@$CI_RUNNER_SERVER:/miotech/artifacts/mdp-backend/${CI_COMMIT_REF_NAME}/ mdp-admin-server/target/
+    - docker login -u $CI_BUILD_DOCKER_USER -p $CI_BUILD_TOKEN $CI_BUILD_DOCKER_URL
+    - docker build -f /builds/mdp-backend/Dockerfile -t ${CI_BUILD_DOCKER_URL}mioyingtech/$SERVICE:$CI_COMMIT_REF_NAME .
+    - docker push ${CI_BUILD_DOCKER_URL}mioyingtech/$SERVICE:$CI_COMMIT_REF_NAME
+
+set-tag:
+  stage: set-tag
+  image: mioyingtech/python-gitlab:0.1-build
+  script:
+    - python /usr/src/app/tag.py --projectId $CI_PROJECT_ID --branchName $CI_COMMIT_REF_NAME --privateToken $CI_GITLAB_TOKEN --currentVersion $VERSION_PRODUCTION --gitlabUrl $GITLAB_URL
+  only:
+    - production
+
+set-tag-hotfix:
+  stage: set-tag
+  image: mioyingtech/python-gitlab:0.1-build
+  script:
+    - python /usr/src/app/tag.py --projectId $CI_PROJECT_ID --branchName $CI_COMMIT_REF_NAME --privateToken $CI_GITLAB_TOKEN --currentVersion $VERSION_PRODUCTION --gitlabUrl $GITLAB_URL
+  only:
+    - /^HOTFIX+.*/
+  when: manual

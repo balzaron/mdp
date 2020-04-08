@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+option java_multiple_files = true;
+option java_package = "com.miotech.mdp.common.models.protobuf.schema";
+package com.miotech.mdp.common.models.protobuf.schema;
+
+
+enum DBType {
+    OTHER_DBTYPE = 0;
+    POSTGRES = 1;
+    MYSQL = 2;
+    SQLSERVER = 3;
+    RDBMS = 4;
+    MONGO = 5;
+    ARANGO = 6;
+    ELASTICSEARCH = 7;
+    SPARKSQL = 8;
+    ATHENA = 9;
+    PRESTO = 10;
+    HIVE = 11;
+    KINESIS = 12;
+}
+
+message DatabaseSchema {
+    string name = 1;
+    DBType database_type = 2;
+    repeated string schemas = 3;
+    repeated TableSchema tables = 4;
+}
+
+message FieldSchema {
+    string name = 1;
+    string description = 2;
+    string database_type = 3;
+    bool is_active = 4;
+    bool is_nullable = 5;
+    bool is_unique = 6;
+
+}
+
+message TableSchema {
+    string name = 1;
+    string description = 2;
+    string schema = 3;
+    repeated FieldSchema fields = 4;
+}
+
+message TableIdentifier {
+    string name = 1;
+    string schema = 2;
+    DBType databaseType = 3;
+    int32 databaseId = 4;
+}
+
+message DatabaseIdentifier {
+    string name = 1;
+    DBType databaseType = 2;
+    int32 databaseId = 3;
+}

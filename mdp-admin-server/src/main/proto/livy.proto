@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+option java_multiple_files = true;
+option java_package = "com.miotech.mdp.common.models.protobuf.livy";
+package com.miotech.mdp.common.models.protobuf.livy;
+
+message StateInfo {
+    int32 id = 1;
+    string state = 2;
+}
+
+message AppInfo {
+    string driverLogUrl = 1;
+    string sparkUiUrl = 2;
+}
+
+message SparkApp {
+    int32 id = 1;
+    string state = 2;
+    string appId = 3;
+    AppInfo appInfo = 4;
+    repeated string log = 5;
+    string kind = 6;
+}
+
+message AppList {
+    repeated SparkApp sessions = 1;
+    int32 from = 2;
+    int32 total = 3;
+}
+
+message LogInfo {
+    int32 id =1;
+    int32 from = 2;
+    int32 size = 3;
+    repeated string log = 4;
+}
+
+message StatementOutput {
+    message Data {
+        string text_plain = 1;
+    }
+    string status = 1;
+    int32 execution_count = 2;
+    Data data = 3;
+    string ename = 4;
+    string evalue = 5;
+    repeated string traceback = 6;
+}
+
+message Statement {
+    int32 id = 1;
+    string code = 2;
+    string state = 3;
+    StatementOutput output = 4;
+    double progress = 5;
+    string sessionId = 6;
+}

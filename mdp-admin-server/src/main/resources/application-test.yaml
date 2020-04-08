@@ -1,0 +1,102 @@
+server:
+  port: 9999
+  servlet:
+    session:
+      persistent: false
+      timeout: 30d
+
+security:
+  pass-token: 744AB811311035B60A7A9EFC175785D2
+
+mdp:
+  hostname: localhost:9999
+  s3:
+    bucket: com.miotech.data.prd
+    enable: true
+
+metabase:
+  auth:
+    password: w1qTYEw0lUTr?F
+    username: test@mioying.com
+    sessioncode: f5d38e13-59ad-469f-b84d-3586f23a7551
+
+livy:
+  host: 13.231.163.20:8998
+  queue: data
+  proxyUser: hadoop
+
+yarn:
+  host: 13.231.163.20
+  port: 8088
+
+zhongda:
+  host: http://zhongda.miotech.com:8000
+  token: ZXGfFpQs7ubLBPJYCZVHn
+
+k8s:
+  api:
+    host: http://54.92.79.173:38080
+    user:
+    password:
+    namespace: default
+  ssl:
+    certDir:
+  s3fs:
+    image: s3fuse:0.0.1
+    mnt_point: /opt/mdp
+    share_volume_name: s3-data
+
+s3:
+  access_key_id: AKIAIL42HPN4LO3XUIHQ
+  secret_access_key: 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
+  region: ap-northeast-1
+  endpoint:
+    url: https://s3.ap-northeast-1.amazonaws.com
+
+spring:
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    open-in-view: true
+    show-sql: false
+  session:
+    jdbc:
+      initialize-schema: always
+      schema: classpath:mdp-user-session.sql
+      table-name: user_session
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+    properties:
+      org:
+        quartz:
+          jobStore:
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+
+datatest:
+  executor:
+    corePoolSize: 10
+    maxPoolSize: 50
+    keepAliveSeconds: 3600
+    queueCapacity: 30
+
+airflow:
+  host: http://192.168.1.211:8082/
+  ssh:
+    host: 192.168.1.211
+    port: 22
+    username: miotech
+  dag-path: /home/miotech/Docker/airflow/dags
+  docker-name: miotech-mdp-airflow
+
+ssh:
+  time-out: 30s
+
+logging:
+  config: classpath:logback-test.xml
+
+testsuite:
+  postgresImage: "mio-agens:latest"
